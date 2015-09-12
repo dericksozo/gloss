@@ -1,34 +1,46 @@
-
+require "obi/nagoyaobi.rb"
 
 namespace :sentence do
   desc "Fetches sentences from twitter streaming API, runs it through an algorithm, and saves it to the database."
   task fetch: :environment do
 
-      TweetStream.configure do |config|
-          config.consumer_key       = 'DNLnlWtIjnA27GXBiFLnIt9DV'
-          config.consumer_secret    = '0JO30aiky7NnwJlbPbhwmjBTMYx9Amlf0Dbu2aooZx6NSKDQdT'
-          config.oauth_token        = '912739170-jdckbGffV3OFDEDzvvLrISCgEcIdL2uqc3DTv57D'
-          config.oauth_token_secret = 'YESyLtfFRo3uC6DbSD3jJFcsekLkeTUcaEwdvfnJcM7vi'
-          config.auth_method        = :oauth
+    default = 'T13'
+    dir   = "#{Rails.root}/lib/obi"
+    frequency = 0
+    char = "#{dir}/jchar.utf8"
+
+    op_char = NagoyaObi.load_operative_character_file(char)
+
+    model = NagoyaObi.load_model(default, dir, frequency)
+
+    TweetStream.configure do |config|
+        config.consumer_key       = 'DNLnlWtIjnA27GXBiFLnIt9DV'
+        config.consumer_secret    = '0JO30aiky7NnwJlbPbhwmjBTMYx9Amlf0Dbu2aooZx6NSKDQdT'
+        config.oauth_token        = '912739170-jdckbGffV3OFDEDzvvLrISCgEcIdL2uqc3DTv57D'
+        config.oauth_token_secret = 'YESyLtfFRo3uC6DbSD3jJFcsekLkeTUcaEwdvfnJcM7vi'
+        config.auth_method        = :oauth
+    end
+
+    client = TweetStream::Client.new
+    statuses = []
+
+    client.sample( {language: 'ja', filter_level: 'low'} ) do |status, client|
+          if !status.retweeted?
+            
+              words = ["#{status.text}"]
+              statuses << {
+                  tweet_created_at: status.created_at,
+                  sentence: words,
+                  tweet_id: status.id,
+                  level: model.readability(words, nil, op_char, smoothing=nil).grade.to_i
+              }
+          end
+          client.stop if statuses.size >= 10
       end
 
-      client = TweetStream::Client.new
-      statuses = []
+      puts "Got sentences"
 
-      client.sample( {language: 'ja', filter_level: 'low'} ) do |status, client|
-            if !status.retweeted?
-                statuses << {
-                    tweet_created_at: status.created_at,
-                    sentence: status.text,
-                    tweet_id: status.id
-                }
-            end
-            client.stop if statuses.size >= 10
-        end
-
-        puts "Got sentences"
-
-        Sentence.create(statuses)
+      Sentence.create(statuses)
 
   end
 
