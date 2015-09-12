@@ -17,6 +17,9 @@ gem 'httparty'
 gem 'tweetstream'
 #/web/Gemfile
 
+gem 'rubysl-securerandom'
+gem 'activeuuid'
+
 gem 'rack-cors', :require=> 'rack/cors'
 
 # See https://github.com/rails/execjs#readme for more supported runtimes

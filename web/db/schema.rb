@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150912182237) do
+ActiveRecord::Schema.define(version: 20150912195905) do
 
   create_table "sentences", force: :cascade do |t|
     t.text     "sentence"
@@ -20,6 +20,15 @@ ActiveRecord::Schema.define(version: 20150912182237) do
     t.datetime "updated_at",                  null: false
     t.datetime "tweet_created_at"
     t.integer  "tweet_id",         limit: 18
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.binary   "uuid"
+    t.integer  "level"
+    t.integer  "count_left"
+    t.integer  "count_right"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
 end
