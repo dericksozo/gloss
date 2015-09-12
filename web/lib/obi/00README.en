@@ -1,0 +1,73 @@
+Obi-2 (NagoyaObi) - A Readability Analyzer of Japanese Texts
+
+Satoshi Sato (Nagoya University)
+2009.08.06
+
+0. License
+
+This software package is distributed under the following license:
+
+   Creative Commons 3.0, Attribution-Noncommercial-Share Alike.
+   (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+
+1. What is Obi-2
+
+This program, obi2, measures readability of Japanese texts.  
+
+This package contains T13 scale model, whose range is from 1 to 13.
+
+   1 -  6: Elementary school (6 years)
+   7 -  9: Junior high school (3 years)
+  10 - 12: High school (3 years)
+       13: Beyond high school
+
+(This package contains T13U, which is provided for backward compatibility for obi-1.)
+
+2. Required Software
+
+  - ruby (ruby 1.8.6 or later)
+  
+3. How to Install
+
+(1) Edit Makefile if necessary
+
+    The command 'obi2' is installed in /usr/local/bin,
+    the ruby library (nagoyaobi.rb) is installed in /usr/local/lib/ruby/site_ruby.
+
+    The scale model files and other required files are installed in /usr/local/share/obi2.
+
+(2) Make
+    
+    % make install
+
+4. How to Execute
+
+    % obi2 -k W utf8_file ...
+    % cat utf8_file | obi2 -k W
+
+       or 
+
+    % obi2 -k J jis_file ...
+    % obi2 -k S sjis_file ...
+
+       When you use T13U 
+
+    % obi2 -m T13U -k W utf8_file ...
+
+5. Execution Example.
+
+    % obi2 -k W README.ja
+    9 309 00README.ja
+
+The first integer is the estimated grade level;
+the second integer is the number of operative bigrames in the given text.
+
+6. More Information
+
+    % obi2 -v
+    % obi2 -h
+    % obi2 -H
+
+    http://kotoba.nuee.nagoya-u.ac.jp/sc/readability/index_e.html
+
+Enjoy!

@@ -13,9 +13,17 @@ namespace :sentence do
       end
 
       client = TweetStream::Client.new
-      keyword = "日本"
-      client.track(keyword, language: 'ja') do |status|
-            puts "#{status.text}"
+      statuses = []
+
+      client.sample( {language: 'ja', filter_level: 'low'} ) do |status, client|
+            if !status.retweeted
+                statuses << {
+                    created_at: status.created_at,
+                    text: status.text,
+                    tweet_id: status.id
+                }
+            end
+            client.stop if statuses.size >= 1000
         end
   end
 

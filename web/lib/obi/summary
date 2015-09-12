@@ -1,0 +1,180 @@
+#!/usr/local/bin/ruby -w
+
+require 'getoptlong'
+
+###
+### 引数(arguments)
+### 
+opts = GetoptLong.new(
+                      [ "--variant","-v", GetoptLong::REQUIRED_ARGUMENT ],
+                      [ "--table",  "-t", GetoptLong::NO_ARGUMENT ],
+                      [ "--topn",   "-n", GetoptLong::REQUIRED_ARGUMENT ],
+                      [ "--latex",  "-l", GetoptLong::NO_ARGUMENT ],
+                      [ "--cut",  "-c", GetoptLong::NO_ARGUMENT ]
+
+)
+
+$MyOpts = Hash.new
+begin
+  opts.each do |opt, arg|
+    $MyOpts[opt] = arg
+  end
+rescue
+  exit(1)
+end
+
+$Target = 0
+if $MyOpts['--variant'] 
+  if $MyOpts['--variant'] =~ /\,/
+    $Target = $MyOpts['--variant'].split(/\,\s*/).map{|x| x.to_i}
+  else
+    $Target = $MyOpts['--variant'].to_i
+  end
+end
+
+$Correct = -1
+$LaTeX = $MyOpts['--latex'] || nil
+$Cut   = $MyOpts['--cut'] || nil
+$Pad   = $LaTeX ? ' & ' : ' '
+
+###
+### Arrayクラスの拡張
+### 
+class Array
+
+  def sum
+    self.inject(0) { |sum, i| sum+i }
+  end
+
+  def median
+    x = self.sort
+    if x.length % 2 == 0
+      (x[x.length/2]+x[(x.length/2)-1])/2
+    else
+      x[x.length/2]
+    end
+  end
+
+end
+
+
+$Result = Hash.new
+$Xs     = []
+$Ys     = []
+$Diff   = []
+
+def proc(line)
+  dat = line.split(/\s+/)
+  if $Target.class == Array
+    store(dat[$Correct].to_f, $Target.collect{|x| dat[x].to_f}.median)
+  else
+    store(dat[$Correct].to_f, dat[$Target].to_f)
+  end
+end
+
+def store(correct, guess)
+  $Result[correct.round] ||= Hash.new(0)
+  $Result[correct.round][guess.round] += 1
+
+  $Xs << correct
+  $Ys << guess
+  $Diff << (correct - guess)
+end
+
+def print_table
+  i_max = $Result.keys.max
+  j_max = $Result.keys.collect { |i| $Result[i].keys.max }.max
+
+  ## データを埋める
+  (1 .. i_max).each do |i|
+    $Result[i] ||= Hash.new(0)
+    (1 .. j_max).each do |j|
+      $Result[i][j] ||= 0
+    end
+  end
+
+  ## 総数を計算する
+  (1 .. i_max).each do |i|
+    $Result[i]['T'] = (1 .. j_max).collect { |j| $Result[i][j] }.sum
+    $Result[i]['AC'] = (i-1 .. i+1).collect { |j| $Result[i][j] || 0 }.sum
+  end
+  $Result['T'] ||= Hash.new(0)
+  (1 .. j_max).each do |j|
+    $Result['T'][j] = (1 .. i_max).collect { |i| $Result[i][j] }.sum
+  end
+  total = (1 .. i_max).collect { |i| $Result[i]['T'] }.sum
+  correct = (1 .. i_max).collect { |i| $Result[i][i] }.sum
+  ac      = (1 .. i_max).collect { |i| $Result[i]['AC'] }.sum
+
+  ## ヘッダー
+  printf("%s%s%s%s\n",
+         sprintf("  %s", $Pad),
+         ((1 .. j_max).collect { |i| sprintf("%4d", i) } + [ sprintf("%5s", 'T') ]).join($Pad),
+         ($Cut ? '' : 
+          $Pad + ($LaTeX ? ['$\\pm 0$', '\\%', '$\\pm 1$', '\\%'] : 
+                  ['C', '%', 'AC', '%'].collect { |x| sprintf("%5s", x) }).join($Pad)),
+         ($LaTeX ? ' \\\\ ' : ''))
+  
+  (1 .. i_max).each do |i|
+    printf("%s%s%s%s\n",
+           sprintf("%2d%s", i, $Pad),
+           ((1 .. j_max).collect { |j| sprintf("%4d", $Result[i][j]) } + 
+            [ sprintf("%5d", $Result[i]['T']) ]).join($Pad),
+           ($Cut ? '' :
+            $Pad + 
+            [sprintf("%5d", $Result[i][i]), 
+             sprintf("%5.3f", $Result[i]['T'] == 0 ? 0.0 : $Result[i][i].to_f/$Result[i]['T']),
+             sprintf("%5d", $Result[i]['AC']), 
+             sprintf("%5.3f", $Result[i]['T'] == 0 ? 0.0 : $Result[i]['AC'].to_f/$Result[i]['T'])].join($LaTeX ? ' & ' : ' ')),
+           ($LaTeX ? ' \\\\' : ''))
+  end
+
+  printf("%s%s%s%s\n",
+         sprintf("%2s%s", 'T', $Pad),
+         ((1 .. j_max).collect { |j| sprintf("%4d", $Result['T'][j]) } + 
+          [sprintf("%5d", total)]).join($Pad),
+         ($Cut ? '' : 
+          $Pad + 
+          [sprintf("%5d", correct), 
+           sprintf("%5.3f", correct.to_f/total),
+           sprintf("%5d", ac), 
+           sprintf("%5.3f", ac.to_f/total)].join($LaTeX ? ' & ' : ' ')),
+         ($LaTeX ? ' \\\\' : ''))
+
+end
+
+def correlation(x, y)
+  n = x.size           # データの数
+  avg_x = x.sum.to_f/n # xの平均
+  avg_y = y.sum.to_f/n # yの平均
+
+  se_x = Math.sqrt(x.collect { |v| ( v - avg_x ) ** 2 }.sum.to_f/n)
+  se_y = Math.sqrt(y.collect { |v| ( v - avg_y ) ** 2 }.sum.to_f/n)
+
+  s    = (0 .. n-1).inject(0) { |sum, i| sum + (x[i] - avg_x)*(y[i] - avg_y) }
+
+  (s / n) / (se_x * se_y)
+end
+
+def root_means_square(values)
+  n = values.size
+  Math.sqrt(values.collect { |v| v*v }.sum.to_f/n)
+end
+
+n = 0
+ARGF.each do |line|
+  line.chomp!
+  if line.empty?
+  elsif line =~ /^\d/    ## 先頭が数字で始まる行が、判定結果
+    if !$MyOpts['--topn'] || n < $MyOpts['--topn'].to_i
+      proc(line)	
+      n += 1
+    else 
+      break
+    end
+  end
+end
+printf("R = %5.3f, RMSE = %5.3f\n", 
+       correlation($Xs, $Ys), root_means_square($Diff))
+$MyOpts['--table'] && print_table
+

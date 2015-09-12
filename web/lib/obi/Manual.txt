@@ -1,0 +1,218 @@
+obi2 簡易マニュアル
+
+佐藤理史
+2009.8.6/2009.8.10
+
+【1. 難易度測定モード】
+
+1.1 テキストを与える
+
+   obi2 [-k E|S|J|W] [-m scale_name] [-L] [-T] textfile ...
+
+   cat textfile | obi2 [-k E|S|J|W] [-m scale_name] [-L] 
+
+       -k E|S|J|W  	   入力テキストの漢字コード
+				E:EUC, S:SJIS, J:JIS, W|UFT8
+				※ 省略するとW(UTF8)が仮定される
+				※ プログラムの内部はUTF8で動作している
+				【重要】：-kは必ず指定すること。
+					漢字コードが間違っていると正しく測定できない！
+
+       -m scale_name	   測定に使用する難易度スケール
+       	  		        T13: 教科書コーパスに基づく13段階の学年
+				T14: 教科書コーパスに基づく14段階の学年（alpha version）
+				T13U: w教科書コーパスに基づく13段階の学年(unigram) -- obi1相当
+
+       -L		   各グレードに対する尤度を表示
+       -T		   難易度の値を行の末尾に表示
+
+
+1.2 測定対象ファイルリストを与える（複数のテキストの難易度を測定）
+
+    obi2 -t target_list [-D dir] [-s scale_name] [-L] [-T]
+
+    cat target_list | obi2 -D dir [-s scale_name] [-L] [-T]
+
+    	target_list:
+		textfile \t kanji_code \t additional_information \n
+		...
+		EOF
+
+		※ kanji_code	テキストファイル(textfile)の漢字コード (E|S|J|W)
+		※ additional_informationは、出力にそのままコピーされて表示される
+
+	-D Dir	       	   テキストファイル(textfile)が格納されているディレクトリを指定
+				Dir/textfileが対象テキストファイルとなる
+
+
+【2. 難易度スケールモデル作成モード】
+
+     obi2 -o operative_char -d corpus_def -D corpus_dir -O output
+
+     	operative_char	   有効文字を定義したファイル(in UTF8)
+	 		   各行の先頭フィールドが有効文字
+			   e.g., jchar.utf8
+
+	corpus_def	   規準コーパスの定義ファイル
+			   各行は、
+				file \t kanji_code \t grade \t additional_info \n
+
+	corpus_dir	   規準コーパスが格納されているディレクトリ
+			   規準コーパスの各ファイルは corpus_dir/file となる
+
+	output		   難易度スケールモデルを格納するファイル名
+
+	[options]
+	-N 2|1		   作成する言語モデル; 2:bigram, 1:unigram [default 2]
+
+	-f integer	   最低頻度の指定 [default 1]
+
+
+【3. 性能評価モード】
+
+3.1 クローズドテスト
+
+     obi2 -o operative_char -M scale_model_file -t test_files -D dir -L | tee closed_test_output
+
+     ※ 難易度測定モードと同一（-M で評価すべきスケールモデルを指定する）
+
+3.2 leave-one-out cross-validation
+
+     obi2 -x cross_validation -P 1 -o operative_char -d corpus_def -D dir -L | tee open_test_output
+
+     ※ 難易度スケールモデル作成モードと同様；-O以外の引数が指定できる
+
+3.3 k-fold cross-validation
+
+     obi2 -x cross_validation -P k -o operative_char -d corpus_def -D dir -L | tee open_test_output
+
+     	  -P k	  	      k分割 [default 2] (k == 1の場合は、leave_one_out)
+
+     ※ 難易度スケールモデル作成モードと同様；-O以外の引数が指定できる
+
+3.4 性能の表示
+
+     bin/summary [-t] test_output
+
+
+【4. 難易度スケールモデルの作り方】
+
+4.0 概要
+
+    (1) 規準コーパスを準備する
+    (2) スケールモデル作成用のディレクトリを作る
+    (3) 規準コーパスの定義ファイルを作成する
+    (4) Makefileを作成する
+    (5) make
+    (6) スケールモデルのインストール
+
+4.1 規準コーパスを準備する
+
+適当なディレクトリ(CorpusDir)に、規準コーパスとして使用するテキストファイル群を
+格納する。
+
+準備すべき規準コーパスは、
+	難易度レベルは8レベル以上、テキスト量は全体で50万字程度
+が一つの目安。
+
+4.2 スケールモデル作成用のディレクトリを作る
+
+obi2のディレクトリの直下に、modelというディレクトリを作成し、
+その下に、適当な名前のディレクトリを作成する。
+
+4.3 規準コーパスの定義ファイルを作成する
+
+規準コーパスは、次の形式。
+
+	textfile \t kanji_code \t grade_level \t additional_information \n
+	...
+	EOF
+
+	※ kanji_code	テキストファイル(textfile)の漢字コード (E|S|J|W)
+	※ additional_informationは、無視される
+
+	※ textfileは、CorpusDirからの相対パス
+
+4.4 Makefileを作成する
+
+Makefileは、こんな感じになる。
+
+------------------------------------------------------------------------------
+Root        = ../..
+Date        = 20090806
+
+Kanji       = E
+Corpus      = $(Root)/../corpus
+JChar       = $(Root)/jchar.utf8
+
+Model       = T13
+N           = 2
+Freq        = 10
+Def         = $(Model).def
+Test        = $(Def)
+ModelFile   = Obi2-$(Model)-$(Date).model
+
+Obi2        = $(Root)/obi2
+Bin         = $(Root)
+
+all:   model
+
+model:      $(ModelFile) 
+closed:     closed-$(Model)-$(Date).exp
+open:       open-$(Model)-$(Date).exp
+cv2:        cv2-$(Model)-$(Date).exp cv2-$(Model)-f10-$(Date).exp
+experiment: closed open
+
+size: $(Def)
+	$(Obi2) -x size -o $(JChar) -k $(Kanji) -d $(Def) -D $(Corpus) -N $(N)
+
+###
+### モデルの作成
+### 
+$(ModelFile): $(Def)
+	$(Obi2) -o $(JChar) -k $(Kanji) -d $(Def) -D $(Corpus) -N $(N) -f $(Freq) -O $@
+
+###
+### 実験の実行
+###
+# (1) クローズドテスト
+closed-$(Model)-$(Date).exp: $(Def) $(ModelFile)
+	$(Obi2) -L -o $(JChar) -M $(ModelFile) -k $(Kanji) -t $(Test) -D $(Corpus) -N $(N) | tee $@; $(Bin)/summary -t $@
+
+# (2) オープンテスト
+open-$(Model)-$(Date).exp: $(Def) 
+	$(Obi2) -x cross_validation -P 1 -L -o $(JChar) -k $(Kanji) -d $(Def) -D $(Corpus) -t $(Test) -N $(N) -f $(Freq) | tee $@ ; $(Bin)/summary -t $@
+
+# (3) 2-fold cross validation
+cv2-$(Model)-$(Date).exp: $(Def) 
+	$(Obi2) -x cross_validation -P 2 -L -o $(JChar) -k $(Kanji) -d $(Def) -D $(Corpus) -N $(N) | tee $@ ; $(Bin)/summary -t $@
+
+cv2-$(Model)-f10-$(Date).exp: $(Def) 
+	$(Obi2) -x cross_validation -P 2 -L -o $(JChar) -k $(Kanji) -d $(Def) -D $(Corpus) -N $(N) -f 10 | tee $@ ; $(Bin)/summary -t $@
+
+clean:
+	rm -f *.model
+
+------------------------------------------------------------------------------
+
+4.5 make
+
+makeでスケールモデルを作成。
+make cv2で、2-fold cross validationを実行。
+     （規準コーパス定義ファイルの奇数番目と偶数番目に分割）
+
+4.6 スケールモデルのインストール
+
+作成したスケールモデルを /usr/local/share/obi2/Obi2-XXX.model
+にコピーする。
+
+これにより、-m XXX が有効になる。
+
+unigramモデルの場合は、xxxUのように、名前の最後にUをつける。
+
+5. 補足(2009.8.10)
+
+(1) 漢字コードW16(UTF-16)は、正しく動作しない。ruby/NKFの問題と思われる。
+    コーパスは、UTF-8に統一して作成するのが望ましい。
+
+以上
