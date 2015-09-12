@@ -23,10 +23,10 @@ namespace :sentence do
 
     client = TweetStream::Client.new
     statuses = []
-
+    insert_count = 0
     client.sample( {language: 'ja', filter_level: 'low'} ) do |status, client|
           if !status.retweeted?
-            
+
               words = ["#{status.text}"]
               statuses << {
                   tweet_created_at: status.created_at,
@@ -35,12 +35,17 @@ namespace :sentence do
                   level: model.readability(words, nil, op_char, smoothing=nil).grade.to_i
               }
           end
-          client.stop if statuses.size >= 10
+          if statuses.size >= 250
+              Sentence.create(statuses)
+              statuses = []
+              insert_count = insert_count + 1
+          end
+          client.stop if insert_count >= 400
       end
 
-      puts "Got sentences"
 
-      Sentence.create(statuses)
+
+
 
   end
 
