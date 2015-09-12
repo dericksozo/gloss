@@ -23,6 +23,7 @@ ActiveRecord::Schema.define(version: 20150912195905) do
   end
 
   create_table "users", force: :cascade do |t|
+
     t.binary   "uuid"
     t.integer  "level"
     t.integer  "count_left"
