@@ -4,7 +4,7 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 
-angular.module('starter', ['ionic', 'ionic.contrib.ui.tinderCards'])
+angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui.tinderCards'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -32,12 +32,28 @@ angular.module('starter', ['ionic', 'ionic.contrib.ui.tinderCards'])
 .factory('SentenceFactory', ['$resource', function ($resource) {
     return $resource('http://localhost:3000/sentences');
 }])
+.factory('UserFactory', ['$resource', '$localStorage', function ($resource, $localStorage) {
+    return {
+        getUser: function () {
+            if ( ! $localStorage.user ) {
+                $resource('http://localhost:3000/user/create').get(function (response, error) {
+                    $localStorage.user = response;
+                    return $localStorage.user;
+                });
+            } else {
+                return $localStorage.user;
+            }
+        }
+    }
+}])
 .controller('SentenceController', ['$scope', 'SentenceFactory', function ($scope, SentenceFactory) {
     var sentence = SentenceFactory.get(function() {
         console.log(sentence);
     });
 }])
-.controller('CardsCtrl', function($scope, TDCardDelegate) {
+.controller('CardsCtrl', function($scope, UserFactory, TDCardDelegate) {
+    var user = UserFactory.getUser();
+    // var sentences = SentenceFactory.getSentences(3);
   var sentences = [
     { sentence: 'クッション性あるし軽いし履いてないみたいだし走ったら飛べる気がする',
       level: 2
@@ -74,7 +90,6 @@ angular.module('starter', ['ionic', 'ionic.contrib.ui.tinderCards'])
   }
 
 })
-
 .controller('CardCtrl', function($scope, TDCardDelegate) {
   $scope.cardSwipedLeft = function(index) {
     console.log('LEFT SWIPE');
@@ -84,4 +99,4 @@ angular.module('starter', ['ionic', 'ionic.contrib.ui.tinderCards'])
     console.log('RIGHT SWIPE');
     $scope.addCard();
   };
-});
+})
