@@ -6,8 +6,8 @@
     <title></title>
 
     <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="lib/ionic-ion-tinder-cards/ionic.tdcards.css">
     <link href="css/style.css" rel="stylesheet">
-
     <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
     <link href="css/ionic.app.css" rel="stylesheet">
     -->
@@ -15,7 +15,10 @@
     <!-- ionic/angularjs js -->
     <script src="lib/ionic/js/ionic.bundle.js"></script>
 
-    <script src="lib/ionic/js/angular/angular-resource.min.js"></script>
+    <!-- <script src="lib/ionic/js/angular/angular-resource.min.js"></script> -->
+
+    <script src="lib/collide/collide.js"></script>
+    <script src="lib/ionic-ion-tinder-cards/ionic.tdcards.js"></script>
 
     <!-- cordova script (this will be a 404 during development) -->
     <script src="cordova.js"></script>
@@ -25,12 +28,23 @@
   </head>
   <body ng-app="starter">
 
-    <ion-pane>
+    <ion-pane ng-controller="CardsCtrl">
       <ion-header-bar class="bar-stable">
-        <h1 class="title">Ionic Blank Starter</h1>
+        <h1 class="title">Sentences</h1>
       </ion-header-bar>
+
       <ion-content>
-      </ion-content>
+          <td-cards>
+            <td-card ng-repeat="card in cards" on-destroy="cardDestroyed($index)" on-swipe-left="cardSwipedLeft($index)" on-swipe-right="cardSwipedRight($index)" on-partial-swipe="cardPartialSwipe(amt)" class="card-{{$index}}">
+              <div class="sentence">
+                  <div class="yes-text">&#x1F44D;</div>
+                  <div class="no-text">&#x1F44B;</div>
+                  <p class="sentence--text">{{card.sentence}}</p>
+                  <div class='sentence--level'>{{card.level}}</div>
+              </div>
+            </td-card>
+          </td-cards>
+        </ion-content>
     </ion-pane>
   </body>
 </html>
