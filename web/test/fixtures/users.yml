@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  uuid: 
+  level: 1
+  count_left: 1
+  count_right: 1
+
+two:
+  uuid: 
+  level: 1
+  count_left: 1
+  count_right: 1
