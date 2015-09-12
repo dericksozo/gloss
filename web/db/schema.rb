@@ -11,13 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150912015447) do
+ActiveRecord::Schema.define(version: 20150912182237) do
 
   create_table "sentences", force: :cascade do |t|
     t.text     "sentence"
     t.integer  "level"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
+    t.datetime "tweet_created_at"
+    t.integer  "tweet_id",         limit: 18
   end
 
 end

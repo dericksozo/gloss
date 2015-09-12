@@ -16,15 +16,20 @@ namespace :sentence do
       statuses = []
 
       client.sample( {language: 'ja', filter_level: 'low'} ) do |status, client|
-            if !status.retweeted
+            if !status.retweeted?
                 statuses << {
-                    created_at: status.created_at,
-                    text: status.text,
+                    tweet_created_at: status.created_at,
+                    sentence: status.text,
                     tweet_id: status.id
                 }
             end
-            client.stop if statuses.size >= 1000
+            client.stop if statuses.size >= 10
         end
+
+        puts "Got sentences"
+
+        Sentence.create(statuses)
+
   end
 
 end
