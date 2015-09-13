@@ -4,7 +4,8 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 
-var APP_URL = "http://10.1.10.79:3000/";
+// var APP_URL = "http://10.1.10.79:3000/";
+var APP_URL = "http://glossapp.herokuapp.com/";
 
 angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui.tinderCards'])
 .run(function($ionicPlatform) {
@@ -53,7 +54,7 @@ angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui
     return {
 
         getSentences: function (amount) {
-            return $resource(APP_URL + 'sentences/:userId/' + amount, {}, {
+            return $resource(APP_URL + 'sentences/:userId/:count', {}, {
                 query: { method: 'GET', isArray: true, params: {userId: user.uuid, count: amount} }
             });
         },
@@ -67,10 +68,11 @@ angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui
 
     }
 }])
-.controller('CardsCtrl', function($scope, SentenceFactory, TDCardDelegate) {
+.controller('CardsCtrl', function($scope, $rootScope, SentenceFactory, TDCardDelegate) {
 
     SentenceFactory.getSentences(3).query({}).$promise.then(function(data) {
         $scope.cards = data;
+        $rootScope.$emit('tdCard.sortCards');
         console.log("data", data);
     });
 
@@ -118,3 +120,20 @@ angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui
     $scope.addCard();
   };
 })
+/* .directive('levelRange', function () {
+    return {
+        restrict: 'E',
+        templateUrl: 'js/templates/levelrange.html',
+        scope: {
+            currentLevel: '=',
+            nextLevel: '=',
+            progress: '='
+        },
+        link: function (scope, element, attrs, controllers) {
+            console.log("scope", scope);
+            console.log("element", element);
+            console.log("attrs", attrs);
+            console.log("controllers", controllers);
+        }
+    }
+}) */

@@ -1,37 +1,190 @@
 /* Empty. Add your own CSS if you like */
+
+html {
+    font-size: 16px;
+}
+
+body {
+    background-color: #fdfdfd;
+    font-family:"ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro",Osaka, "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #fff;
+}
+
+img {
+    border: 0;
+    max-width: 100%;
+}
+
+.logo {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    width: 67.772816512px;
+}
+
+.button {
+    width: 109.65641712px;
+    height: 109.65641712px;
+    position: relative;
+    border: none;
+}
+
+.button-round {
+    border-radius: 109.65641712px;
+    background-color: #1D1D1D;
+    box-shadow: -3px 6px 20px 1px rgba(46, 37, 89, 0.5);
+}
+
+.button.button-list {
+    background: none;
+    left: 10px;
+}
+
+.buttonGroup {
+    position: absolute;
+    margin-top: 430px;
+    width: 100%;
+}
+
+.button-understand {
+    position: absolute;
+    top: 0px;
+    right: 20px;
+}
+
+.button-noUnderstand {
+    position: absolute;
+    top: 0px;
+    right: 151px;
+}
+
+
+.noUnderstandGraphic {
+    position: absolute;
+    top: 14px;
+    left: 53px;
+}
+
+.understandGraphic {
+    position: absolute;
+    top: 28px;
+    left: 60px;
+}
+
+.noUnderstandGraphic:before,
+.noUnderstandGraphic:after,
+.understandGraphic:before,
+.understandGraphic:after {
+    content: " ";
+    display: block;
+    position: absolute;
+    background-color: #2B2B2B;
+    width: 4px;
+    height: 81px;
+}
+
+.noUnderstandGraphic:before,
+.understandGraphic:before {
+    transform: rotate(45deg);
+}
+
+.noUnderstandGraphic:after,
+.understandGraphic:after {
+    transform: rotate(-45deg);
+}
+
+.understandGraphic:before {
+    transform: rotate(-70deg);
+    top: -27px;
+}
+
+.understandGraphic:after {
+    transform: rotate(70deg);
+}
+
+.listGraphic {
+    left: 20px;
+}
+
+.listGraphic,
+.listGraphic:before,
+.listGraphic:after {
+    position: absolute;
+    height: 4px;
+    width: 70px;
+    background-color: #1D1D1D;
+}
+
+.listGraphic:before,
+.listGraphic:after {
+    content: " ";
+    display: block;
+    left: 14px;
+}
+
+.listGraphic:before {
+    top: -16px;
+}
+
+.listGraphic:after {
+    top: 16px;
+}
+
+
 td-cards {
   display: block;
 }
 
 td-card {
-  position: absolute;
-  left: 50%;
-  margin-top: 80px;
-  margin-bottom: 40px;
-  margin-left: -150px;
-  width: 300px;
-  height: 300px;
+    position: absolute;
+    left: 50%;
+    margin-top: 80px;
+    margin-bottom: 40px;
+    margin-left: -45%;
+    width: 90%;
+    height: 300px;
 
-  background-color: #E4E4E4;
-  border: 1px solid #999;
-  box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
-  border-radius: 6px;
-
+    background-color: #1D1D1D;
     padding-left: 1rem;
     padding-right: 0.5rem;
     padding-top: 1rem;
+
+    overflow: hidden;
 }
 
 .sentence--text {
     font-size: 1.2rem;
     line-height: 1.4;
+    position: relative;
+    z-index: 2;
+}
+
+.sentence--text.small {
+    font-size: 1.4rem;
+}
+
+.sentence--text.medium {
+    font-size: 1.6rem;
+}
+
+.sentence--text.large {
+    font-size: 2.1rem;
+}
+
+.sentence--text.largest {
+    font-size: 2.618125rem;
 }
 
 .sentence--level {
     position: absolute;
-    bottom: 0.5rem;
-    right: 1rem;
-    color: #8E8E8E;
+    bottom: -5rem;
+    right: -2rem;
+    color: #2B2B2B;
+    font-size: 11.853526rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
 }
 
 /*

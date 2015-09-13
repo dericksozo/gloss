@@ -1,5 +1,4 @@
-
-class UserController < ApplicationController
+class UserController < ApplicationController     
     def create
     	uuid = SecureRandom.uuid
     	user = User.new({uuid: uuid, level: 2, count_left: 0, count_right: 0})

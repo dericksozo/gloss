@@ -406,24 +406,32 @@
         var i, j;
 
         var sortCards = function() {
-          existingCards = $element[0].querySelectorAll('td-card');
+          existingCards = $element[0].querySelectorAll('.td-card');
+
+          console.log("IS this even working?");
+          console.log("existing cards", existingCards);
 
           for(i = 0; i < existingCards.length; i++) {
             card = existingCards[i];
-            if(!card) continue;
+
+            if( ! card) {
+                continue;
+            }
             /* if(i > 0) { */
             /* TODO: Make sure that the cards always look like a deck. */
-              card.style.transform = card.style.webkitTransform = 'translate3d(0, ' + (i * 4) + 'px, 0)';
+            // console.log("IS this even working?");
+            card.style.transform = card.style.webkitTransform = 'translate3d(0px, ' + (i * 4) + 'px, 0)';
             /* } */
             card.style.zIndex = (existingCards.length - i);
-          }
+        }
+
         };
 
         $timeout(function() {
           sortCards();
         });
 
-        $scope.$on('tdCard.sortCards', function () {
+        $rootScope.$on('tdCard.sortCards', function () {
             console.log("Yep, about to sort the cards.");
             sortCards();
         });

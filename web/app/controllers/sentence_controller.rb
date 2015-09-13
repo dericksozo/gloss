@@ -3,30 +3,30 @@ class SentenceController < ApplicationController
   
   def index
     user = User.where(uuid: params[:uuid]).first
-    
+
     sentences = Sentence.find_by_sql(["SELECT * FROM sentences WHERE level = ? AND id NOT IN (SELECT sentence_id FROM user_sentences WHERE user_id = ?) LIMIT ?", user.level, user.id, params[:number].to_i])
-    
+
     ids = sentences.map(&:id)
-    
+
     relations = []
     ids.each do |id|
       relations << {user_id: user.id, sentence_id: id.to_i}
     end
-    
+
     UserSentence.create(relations)
-    
+
     render json: sentences
   end
-  
+
   def swipe
     user = User.where(uuid: params[:uuid]).first
-    
+
     if params[:understood] == 'true'
       understood = true
     else
       understood = false
     end
-    
+
     if understood
       count_right = user.count_right + 1
       if count_right > 4
@@ -44,7 +44,7 @@ class SentenceController < ApplicationController
         user.count_left = count_left
       end
     end
-    
+
     if user.save
       render json: { status: "Fresh" }
     else
