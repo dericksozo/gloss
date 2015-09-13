@@ -4,6 +4,8 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 
+var APP_URL = "http://10.1.10.79:3000/";
+
 angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui.tinderCards'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -29,14 +31,11 @@ angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui
     }
   }
 })
-.factory('SentenceFactory', ['$resource', function ($resource) {
-    return $resource('http://localhost:3000/sentences');
-}])
 .factory('UserFactory', ['$resource', '$localStorage', function ($resource, $localStorage) {
     return {
         getUser: function () {
             if ( ! $localStorage.user ) {
-                $resource('http://localhost:3000/user/create').get(function (response, error) {
+                $resource(APP_URL + 'user/create').get(function (response, error) {
                     $localStorage.user = response;
                     return $localStorage.user;
                 });
@@ -46,36 +45,47 @@ angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui
         }
     }
 }])
-.controller('SentenceController', ['$scope', 'SentenceFactory', function ($scope, SentenceFactory) {
-    var sentence = SentenceFactory.get(function() {
-        console.log(sentence);
-    });
-}])
-.controller('CardsCtrl', function($scope, UserFactory, TDCardDelegate) {
+.factory('SentenceFactory', ['$resource', 'UserFactory', function ($resource, UserFactory) {
+
     var user = UserFactory.getUser();
-    // var sentences = SentenceFactory.getSentences(3);
-  var sentences = [
-    { sentence: 'クッション性あるし軽いし履いてないみたいだし走ったら飛べる気がする',
-      level: 2
-    },
-    { sentence: 'え、ちょっと待ったやばい😨わたしがＮＹにいる時にちょーど、Flo ridaのコンサートあんだけど…コレは……。',
-      level: 2
-    },
-    {
-        sentence: '僕はアニメとかが好きです。',
-        level: 2
-    },
-  ];
+
+    console.log("What's the user?", user);
+    return {
+
+        getSentences: function (amount) {
+            return $resource(APP_URL + 'sentences/:userId/' + amount, {}, {
+                query: { method: 'GET', isArray: true, params: {userId: user.uuid, count: amount} }
+            });
+        },
+
+        scoreSentence: function (understood) {
+            console.log("What's understood?", understood);
+            return $resource(APP_URL + 'sentences/:userId', {}, {
+                query: { method: 'POST', params: {userId: user.uuid, understood: understood}}
+            })
+        }
+
+    }
+}])
+.controller('CardsCtrl', function($scope, SentenceFactory, TDCardDelegate) {
+
+    SentenceFactory.getSentences(3).query({}).$promise.then(function(data) {
+        $scope.cards = data;
+        console.log("data", data);
+    });
 
   $scope.cardDestroyed = function(index) {
     $scope.cards.splice(index, 1);
+    console.log("Yep, destroyed this bitch.");
     $scope.addCard();
   };
 
   $scope.addCard = function() {
-    var newCard = sentences[Math.floor(Math.random() * sentences.length)];
-    newCard.id = Math.random();
-    $scope.cards.push(angular.extend({}, newCard));
+    // var newCard = sentences[Math.floor(Math.random() * sentences.length)];
+    // newCard.id = Math.random();
+    SentenceFactory.getSentences(1).query({}).$promise.then(function (data) {
+        $scope.cards.push(data[0]);
+    });
   }
 
   $scope.cardPartialSwipe = function (amount) {
@@ -83,10 +93,18 @@ angular.module('starter', ['ionic', 'ngResource', 'ngStorage', 'ionic.contrib.ui
       console.log(amount);
   }
 
-  $scope.cards = [];
+  $scope.cardSwipedRight = function ($index) {
+      SentenceFactory.scoreSentence(true).query({}).$promise.then(function (data) {
+          console.log("Will something get returned here?", data);
+      });
+      // console.log("The card got swipped right.");
+  }
 
-  for (var i = 0; i < 3; i++) {
-      $scope.addCard();
+  $scope.cardSwipedLeft = function ($index) {
+      SentenceFactory.scoreSentence(false).query({}).$promise.then(function (data) {
+          console.log("Will something get returned here?", data);
+      });
+      console.log("The card got swipped left.");
   }
 
 })
