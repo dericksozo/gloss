@@ -30,7 +30,7 @@ namespace :sentence do
               words = ["#{status.text}"]
               statuses << {
                   tweet_created_at: status.created_at,
-                  sentence: words,
+                  sentence: words[0],
                   tweet_id: status.id,
                   level: model.readability(words, nil, op_char, smoothing=nil).grade.to_i
               }

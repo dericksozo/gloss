@@ -13,13 +13,17 @@
 
 ActiveRecord::Schema.define(version: 20150912204024) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+  enable_extension "uuid-ossp"
+
   create_table "sentences", force: :cascade do |t|
     t.text     "sentence"
     t.integer  "level"
-    t.datetime "created_at",                  null: false
-    t.datetime "updated_at",                  null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
     t.datetime "tweet_created_at"
-    t.integer  "tweet_id",         limit: 18
+    t.integer  "tweet_id",         limit: 8
   end
 
   create_table "user_sentences", force: :cascade do |t|
@@ -29,11 +33,11 @@ ActiveRecord::Schema.define(version: 20150912204024) do
     t.datetime "updated_at",  null: false
   end
 
-  add_index "user_sentences", ["sentence_id"], name: "index_user_sentences_on_sentence_id"
-  add_index "user_sentences", ["user_id"], name: "index_user_sentences_on_user_id"
+  add_index "user_sentences", ["sentence_id"], name: "index_user_sentences_on_sentence_id", using: :btree
+  add_index "user_sentences", ["user_id"], name: "index_user_sentences_on_user_id", using: :btree
 
   create_table "users", force: :cascade do |t|
-    t.binary   "uuid"
+    t.uuid     "uuid"
     t.integer  "level"
     t.integer  "count_left"
     t.integer  "count_right"
